@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchSim.Domain", "ArchSim.Domain\ArchSim.Domain.csproj", "{55FB9171-225F-4485-B228-2D802837F984}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchSim.Domain.Tests", "ArchSim.Domain.Tests\ArchSim.Domain.Tests.csproj", "{101365D4-3EB8-496A-AB19-B7F540CEE706}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{55FB9171-225F-4485-B228-2D802837F984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55FB9171-225F-4485-B228-2D802837F984}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55FB9171-225F-4485-B228-2D802837F984}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55FB9171-225F-4485-B228-2D802837F984}.Release|Any CPU.Build.0 = Release|Any CPU
+		{101365D4-3EB8-496A-AB19-B7F540CEE706}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{101365D4-3EB8-496A-AB19-B7F540CEE706}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{101365D4-3EB8-496A-AB19-B7F540CEE706}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{101365D4-3EB8-496A-AB19-B7F540CEE706}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
