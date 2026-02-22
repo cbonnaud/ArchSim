@@ -6,6 +6,8 @@ namespace ArchSim.Azure.Profiles;
 
 public class AzureAppServiceProfile : AzureResourceProfile
 {
+    private const double DefaultTimeout = 1000;
+
     public int InstanceCount { get; }
 
     public AzureAppServiceProfile(
@@ -22,8 +24,7 @@ public class AzureAppServiceProfile : AzureResourceProfile
 
     public override SimulatedNode ToSimulatedNode()
     {
-        var (capacityPerInstance, costPerInstance) =
-            AzureAppServiceSkuCatalog.Resolve(Sku);
+        var (capacityPerInstance, costPerInstance) = AzureAppServiceSkuCatalog.Resolve(Sku);
 
         var totalCapacity = capacityPerInstance * InstanceCount;
         var totalCost = costPerInstance * InstanceCount;
@@ -32,7 +33,7 @@ public class AzureAppServiceProfile : AzureResourceProfile
             label: Name,
             baseLatency: 10,
             capacity: totalCapacity,
-            timeout: 1000,
+            timeout: DefaultTimeout,
             monthlyCost: totalCost,
             costPolicy: new FixedCostPolicy(totalCost));
     }

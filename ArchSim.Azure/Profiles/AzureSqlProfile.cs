@@ -6,6 +6,8 @@ namespace ArchSim.Azure.Profiles;
 
 public class AzureSqlProfile : AzureResourceProfile
 {
+    private const double DefaultTimeout = 2000;
+
     public AzureSqlProfile(string name, string sku)
         : base(name, sku)
     {
@@ -19,7 +21,7 @@ public class AzureSqlProfile : AzureResourceProfile
             label: Name,
             baseLatency: 20,
             capacity: capacity,
-            timeout: 2000,
+            timeout: DefaultTimeout,
             monthlyCost: cost,
             costPolicy: new FixedCostPolicy(cost));
     }
