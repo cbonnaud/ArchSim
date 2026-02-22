@@ -1,7 +1,8 @@
-using ArchSim.Application.Abstractions;
 using ArchSim.Application.Contracts;
 using ArchSim.Application.Orchestration;
 using ArchSim.Azure;
+using ArchSim.Domain.Simulation;
+using ArchSim.Domain.Simulation.Cost;
 using FluentAssertions;
 
 namespace ArchSim.Application.Tests;
@@ -13,7 +14,7 @@ public class SimulationOrchestratorTests
     {
         var request = new SimulationRequest
         {
-            Provider = CloudProvider.Azure,
+            Provider = Cloud.Models.CloudProviderType.Azure,
             Load = 300,
             Resources = new()
             {
@@ -33,12 +34,11 @@ public class SimulationOrchestratorTests
             },
             Connections = new()
             {
-                new ConnectionDefinition
-                {
-                    From = "App",
-                    To = "Sql",
-                    NetworkLatency = 5
-                }
+                new Connection(
+                    new SimulatedNode("App", 1, 1, 1, 1, new FixedCostPolicy(200)),
+                    new SimulatedNode("Sql", 1, 1, 1, 1, new FixedCostPolicy(50)),
+                    10,
+                    5000)
             }
         };
 
@@ -58,7 +58,7 @@ public class SimulationOrchestratorTests
     {
         var request = new SimulationRequest
         {
-            Provider = CloudProvider.Azure,
+            Provider = Cloud.Models.CloudProviderType.Azure,
             Load = 100,
             Resources = new()
             {
@@ -74,8 +74,7 @@ public class SimulationOrchestratorTests
 
         var orchestrator = new SimulationOrchestrator([new AzureCloudProvider()]);
 
-        Assert.Throws<ArgumentException>(() =>
-            orchestrator.Run(request));
+        Assert.Throws<InvalidOperationException>(() => orchestrator.Run(request));
     }
 
     [Fact]
@@ -83,7 +82,7 @@ public class SimulationOrchestratorTests
     {
         var request = new SimulationRequest
         {
-            Provider = CloudProvider.Azure,
+            Provider = Cloud.Models.CloudProviderType.Azure,
             Load = 100,
             Resources = new()
             {
@@ -97,12 +96,11 @@ public class SimulationOrchestratorTests
             },
             Connections = new()
             {
-                new ConnectionDefinition
-                {
-                    From = "App",
-                    To = "Sql", // not defined
-                    NetworkLatency = 5
-                }
+                new Connection(
+                    new SimulatedNode("App", 1, 1, 1, 1, new FixedCostPolicy(200)),
+                    new SimulatedNode("UnknownResource", 1, 1, 1, 1, new FixedCostPolicy(50)),
+                    5,
+                    5000)
             }
         };
 
@@ -117,7 +115,7 @@ public class SimulationOrchestratorTests
     {
         var request = new SimulationRequest
         {
-            Provider = CloudProvider.Azure,
+            Provider = Cloud.Models.CloudProviderType.Azure,
             Load = 0,
             Resources = new()
             {

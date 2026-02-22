@@ -1,45 +1,50 @@
-using ArchSim.Application.Abstractions;
 using ArchSim.Application.Contracts;
-using ArchSim.Azure.Profiles;
+using ArchSim.Azure.Catalog;
+using ArchSim.Cloud.Abstractions;
+using ArchSim.Cloud.Models;
 using ArchSim.Domain.Simulation;
+using ArchSim.Domain.Simulation.Cost;
 
 namespace ArchSim.Azure;
 
 public class AzureCloudProvider : ICloudProvider
 {
-    public CloudProvider Provider => CloudProvider.Azure;
+    public const string Azure = "Azure";
+
+    private readonly AzureCatalog _catalog = new();
+
+    public CloudProviderType ProviderType => CloudProviderType.Azure;
 
     public ISimulatedNode CreateNode(ResourceDefinition definition)
     {
-        return definition.Type switch
-        {
-            "AppService" => new AzureAppServiceProfile(
-                definition.Name,
-                definition.Sku,
-                definition.InstanceCount ?? 1)
-                .ToSimulatedNode(),
+        var profile = _catalog.GetProfile(definition.Type, definition.Sku);
 
-            "Sql" => new AzureSqlProfile(
-                definition.Name,
-                definition.Sku)
-                .ToSimulatedNode(),
+        var totalCapacity = profile.Capacity.RequestsPerSecond
+                            * (definition.InstanceCount ?? 1);
 
-            _ => throw new ArgumentException(
-                $"Unsupported Azure resource type '{definition.Type}'.")
-        };
+        var totalCost = profile.Cost.MonthlyCost
+                        * (definition.InstanceCount ?? 1);
+
+        return new SimulatedNode(
+            label: definition.Name,
+            baseLatency: profile.Performance.BaseLatencyMs,
+            capacity: totalCapacity,
+            timeout: profile.Performance.TimeoutMs,
+            monthlyCost: totalCost,
+            costPolicy: new FixedCostPolicy(totalCost));
     }
 
     public SimulationGraph BuildGraph(
         IEnumerable<ISimulatedNode> nodes,
-        IEnumerable<ConnectionDefinition> connections)
+        IEnumerable<Connection> connections)
     {
         var nodeList = nodes.ToList();
         var nodeMap = nodeList.ToDictionary(n => n.Label);
 
         var domainConnections = connections.Select(c =>
             new Connection(
-                nodeMap[c.From],
-                nodeMap[c.To],
+                nodeMap[c.From.Label],
+                nodeMap[c.To.Label],
                 c.NetworkLatency,
                 timeout: 5000));
 

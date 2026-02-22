@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ArchSim.Application\ArchSim.Application.csproj" />
     <ProjectReference Include="..\ArchSim.Domain\ArchSim.Domain.csproj" />
+    <ProjectReference Include="..\ArchSim.Cloud\ArchSim.Cloud.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,15 +1,16 @@
-using ArchSim.Application.Contracts;
-using ArchSim.Domain.Simulation;
+namespace ArchSim.Cloud.Abstractions;
 
-namespace ArchSim.Application.Abstractions;
+using ArchSim.Application.Contracts;
+using ArchSim.Cloud.Models;
+using ArchSim.Domain.Simulation;
 
 public interface ICloudProvider
 {
-    CloudProvider Provider { get; }
+    CloudProviderType ProviderType { get; }
 
     ISimulatedNode CreateNode(ResourceDefinition definition);
 
     SimulationGraph BuildGraph(
         IEnumerable<ISimulatedNode> nodes,
-        IEnumerable<ConnectionDefinition> connections);
+        IEnumerable<Connection> connections);
 }

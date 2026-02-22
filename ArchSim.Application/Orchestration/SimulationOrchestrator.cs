@@ -1,5 +1,5 @@
-using ArchSim.Application.Abstractions;
 using ArchSim.Application.Contracts;
+using ArchSim.Cloud.Abstractions;
 using ArchSim.Domain.Simulation;
 using ArchSim.Domain.Simulation.Cost;
 
@@ -16,7 +16,7 @@ public class SimulationOrchestrator
 
     public SimulationResponse Run(SimulationRequest request)
     {
-        var provider = _providers.FirstOrDefault(p => p.Provider == request.Provider)
+        var provider = _providers.FirstOrDefault(p => p.ProviderType == request.Provider)
                     ?? throw new InvalidOperationException($"No provider registered for '{request.Provider}'.");
 
         var nodes = request.Resources.Select(provider.CreateNode).ToList();
