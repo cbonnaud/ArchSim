@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ArchSim.Application\ArchSim.Application.csproj" />
     <ProjectReference Include="..\ArchSim.Domain\ArchSim.Domain.csproj" />
   </ItemGroup>
 

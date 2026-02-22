@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchSim.Azure", "ArchSim.Az
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchSim.Azure.Tests", "ArchSim.Azure.Tests\ArchSim.Azure.Tests.csproj", "{A2A1CB39-2EF4-4FE4-8567-04D2E05FE644}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchSim.Application", "ArchSim.Application\ArchSim.Application.csproj", "{09330763-1919-4330-9450-EA6247BBAF28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchSim.Application.Tests", "ArchSim.Application.Tests\ArchSim.Application.Tests.csproj", "{1CAB8CC1-4793-44EB-A03B-F119A6E43E28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{A2A1CB39-2EF4-4FE4-8567-04D2E05FE644}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2A1CB39-2EF4-4FE4-8567-04D2E05FE644}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2A1CB39-2EF4-4FE4-8567-04D2E05FE644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09330763-1919-4330-9450-EA6247BBAF28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09330763-1919-4330-9450-EA6247BBAF28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09330763-1919-4330-9450-EA6247BBAF28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09330763-1919-4330-9450-EA6247BBAF28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CAB8CC1-4793-44EB-A03B-F119A6E43E28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CAB8CC1-4793-44EB-A03B-F119A6E43E28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CAB8CC1-4793-44EB-A03B-F119A6E43E28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CAB8CC1-4793-44EB-A03B-F119A6E43E28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
