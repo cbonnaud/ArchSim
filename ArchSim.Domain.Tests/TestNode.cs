@@ -7,6 +7,7 @@ public class TestNode(string label, double baseLatency, double capacity, decimal
     public int ProcessCallCount { get; private set; }
 
     public string Label { get; } = label;
+    public double Capacity { get; } = capacity;
     public decimal MonthlyCost { get; } = cost;
 
     public NodeProcessingResult Process(double load)

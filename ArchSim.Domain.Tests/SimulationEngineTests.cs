@@ -157,4 +157,22 @@ public class SimulationEngineTests
 
         Assert.Equal(40m, result.TotalMonthlyCost);
     }
+
+    [Fact]
+    public void Run_Should_Sum_All_Node_Costs_Linearly()
+    {
+        var a = new SimulatedNode("A", 1, 10, 100, 10);
+        var b = new SimulatedNode("B", 1, 10, 100, 20);
+        var c = new SimulatedNode("C", 1, 10, 100, 30);
+
+        var graph = new SimulationGraph(
+            new[] { a, b, c },
+            Array.Empty<Connection>());
+
+        var engine = new SimulationEngine(graph);
+
+        var result = engine.Run(5);
+
+        Assert.Equal(60m, result.TotalMonthlyCost);
+    }
 }
