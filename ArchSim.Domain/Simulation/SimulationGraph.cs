@@ -17,6 +17,7 @@ public class SimulationGraph
         ValidateConnections();
         _adjacency = BuildAdjacencyDictionary();
         ValidateAcyclic();
+        ValidateSingleRoot();
     }
 
     public IReadOnlyList<Connection> GetOutgoingConnections(ISimulatedNode node)
@@ -93,5 +94,22 @@ public class SimulationGraph
 
         visiting.Remove(node);
         visited.Add(node);
+    }
+
+    private void ValidateSingleRoot()
+    {
+        var nodesWithIncoming = Connections
+            .Select(c => c.To)
+            .ToHashSet();
+
+        var roots = Nodes
+            .Where(n => !nodesWithIncoming.Contains(n))
+            .ToList();
+
+        if (roots.Count != 1)
+        {
+            throw new InvalidOperationException(
+                $"Graph must contain exactly one root. Found {roots.Count}.");
+        }
     }
 }
