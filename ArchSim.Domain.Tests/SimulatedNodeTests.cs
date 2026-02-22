@@ -1,96 +1,73 @@
-using FluentAssertions;
-using Xunit;
 using ArchSim.Domain.Simulation;
 using ArchSim.Domain.Simulation.Cost;
+using FluentAssertions;
 
 namespace ArchSim.Domain.Tests;
 
 public class SimulatedNodeTests
 {
     [Fact]
-    public void Should_not_be_saturated_when_load_is_below_capacity()
+    public void Should_use_base_latency_when_utilization_is_less_or_equal_to_one()
     {
-        var node = new SimulatedNode(
-            "TestNode",
-            baseLatency: 40,
-            capacity: 100,
-            timeout: 200,
-            monthlyCost: 150,
-            costPolicy: new FixedCostPolicy(150)
-        );
+        var node = CreateNode(
+            baseLatency: 10,
+            capacity: 100);
 
-        var result = node.Process(load: 40);
+        var result = node.Process(load: 50);
 
+        result.Latency.Should().Be(10);
         result.IsSaturated.Should().BeFalse();
-        result.Latency.Should().Be(40);
     }
 
     [Fact]
-    public void Should_be_saturated_when_load_exceeds_capacity()
+    public void Should_scale_latency_when_saturated()
     {
-        var node = new SimulatedNode(
-            "TestNode",
-            baseLatency: 40,
-            capacity: 50,
-            timeout: 200,
-            monthlyCost: 150,
-            costPolicy: new FixedCostPolicy(150)
-        );
+        var node = CreateNode(
+            baseLatency: 10,
+            capacity: 100);
 
-        var result = node.Process(load: 80);
+        var result = node.Process(load: 200);
 
+        result.Latency.Should().Be(20); // 10 * (200/100)
         result.IsSaturated.Should().BeTrue();
-        result.Latency.Should().Be(64); // 40 * 1.6
     }
 
     [Fact]
-    public void Should_not_timeout_when_latency_is_below_timeout()
+    public void Should_timeout_when_latency_equals_timeout()
     {
         var node = new SimulatedNode(
-            "TestNode",
-            baseLatency: 40,
+            "A",
+            baseLatency: 100,
             capacity: 100,
-            timeout: 200,
-            monthlyCost: 150,
-            costPolicy: new FixedCostPolicy(150)
-        );
+            timeout: 100,
+            monthlyCost: 100,
+            costPolicy: new FixedCostPolicy(100));
 
-        var result = node.Process(load: 40);
-
-        result.HasTimedOut.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Should_timeout_when_latency_exceeds_timeout()
-    {
-        var node = new SimulatedNode(
-            "TestNode",
-            baseLatency: 40,
-            capacity: 50,
-            timeout: 200,
-            monthlyCost: 150,
-            costPolicy: new FixedCostPolicy(150)
-        );
-
-        var result = node.Process(load: 300);
-        // utilization = 6
-        // latency = 240
+        var result = node.Process(load: 100);
 
         result.HasTimedOut.Should().BeTrue();
     }
 
     [Fact]
-    public void Should_expose_monthly_cost()
+    public void Should_handle_zero_load()
     {
-        var node = new SimulatedNode(
-            "TestNode",
-            baseLatency: 40,
-            capacity: 100,
-            timeout: 200,
-            monthlyCost: 150,
-            costPolicy: new FixedCostPolicy(150)
-        );
+        var node = CreateNode();
 
-        node.MonthlyCost.Should().Be(150);
+        var result = node.Process(0);
+
+        result.Latency.Should().Be(10); // base latency
+        result.IsSaturated.Should().BeFalse();
+        result.HasTimedOut.Should().BeFalse();
+    }
+
+    private static SimulatedNode CreateNode(string label = "A", double baseLatency = 10, double capacity = 100)
+    {
+        return new SimulatedNode(
+            label,
+            baseLatency: baseLatency,
+            capacity: capacity,
+            timeout: 100,
+            monthlyCost: 1000,
+            costPolicy: new FixedCostPolicy(1000));
     }
 }

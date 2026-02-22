@@ -6,7 +6,7 @@ public class LinearCostModel : ICostModel
         IReadOnlyCollection<ISimulatedNode> nodes,
         double load)
     {
-        return nodes.Sum(n => n.MonthlyCost);
+        return nodes.Sum(n => n.CalculateMonthlyCost(load));
     }
 
     public decimal CalculateCostPerRequest(
