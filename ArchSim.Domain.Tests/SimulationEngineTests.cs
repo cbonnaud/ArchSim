@@ -9,8 +9,8 @@ public class SimulationEngineTests
     // [Fact]
     // public void Should_calculate_total_latency_without_errors_when_not_saturated()
     // {
-    //     var compute = new SimulatedNode(10, 100, 200, 150);
-    //     var database = new SimulatedNode(40, 100, 200, 200);
+    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 150);
+    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
 
     //     var engine = new SimulationEngine([compute, database]);
 
@@ -23,8 +23,8 @@ public class SimulationEngineTests
     // [Fact]
     // public void Should_report_error_when_database_times_out()
     // {
-    //     var compute = new SimulatedNode(10, 100, 200, 150);
-    //     var database = new SimulatedNode(40, 50, 200, 200);
+    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 150);
+    //     var database = new SimulatedNode("Database", 40, 50, 200, 200);
 
     //     var engine = new SimulationEngine([compute, database]);
 
@@ -36,9 +36,9 @@ public class SimulationEngineTests
     // [Fact]
     // public void Should_process_multiple_nodes_in_sequence()
     // {
-    //     var compute = new SimulatedNode(10, 100, 200, 150);
-    //     var database = new SimulatedNode(40, 100, 200, 200);
-    //     var cache = new SimulatedNode(5, 100, 200, 100);
+    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 150);
+    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
+    //     var cache = new SimulatedNode("Cache", 5, 100, 200, 100);
 
     //     var engine = new SimulationEngine([compute, cache, database]);
 
@@ -53,8 +53,8 @@ public class SimulationEngineTests
     // [Fact]
     // public void Should_calculate_total_monthly_cost()
     // {
-    //     var compute = new SimulatedNode(10, 100, 200, 100);
-    //     var database = new SimulatedNode(40, 100, 200, 200);
+    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 100);
+    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
 
     //     var engine = new SimulationEngine([compute, database]);
 
@@ -66,8 +66,8 @@ public class SimulationEngineTests
     // [Fact]
     // public void Should_calculate_cost_per_request()
     // {
-    //     var compute = new SimulatedNode(10, 100, 200, 100);
-    //     var database = new SimulatedNode(40, 100, 200, 200);
+    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 100);
+    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
 
     //     var engine = new SimulationEngine([compute, database]);
 
@@ -79,8 +79,8 @@ public class SimulationEngineTests
     [Fact]
     public void Should_calculate_total_latency_with_network_latency()
     {
-        var compute = new SimulatedNode(10, 100, 100, 150);
-        var database = new SimulatedNode(40, 100, 200, 150);
+        var compute = new SimulatedNode("Compute", 10, 100, 100, 150);
+        var database = new SimulatedNode("Database", 40, 100, 200, 150);
 
         var connection = new Connection(
             compute,
@@ -109,8 +109,8 @@ public class SimulationEngineTests
     [Fact]
     public void Should_report_error_when_connection_timeout_is_exceeded()
     {
-        var compute = new SimulatedNode(10, 100, 100, 150);
-        var database = new SimulatedNode(40, 50, 200, 150);
+        var compute = new SimulatedNode("Compute", 10, 100, 100, 150);
+        var database = new SimulatedNode("Database", 40, 50, 200, 150);
 
         var connection = new Connection(
             compute,
@@ -129,5 +129,32 @@ public class SimulationEngineTests
         var result = engine.Run(load: 300);
 
         result.HasErrors.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Run_Should_Not_Duplicate_MonthlyCost_When_Node_Converges()
+    {
+        var a = new SimulatedNode("A", 1, 10, 100, 10);
+        var b = new SimulatedNode("B", 1, 10, 100, 10);
+        var c = new SimulatedNode("C", 1, 10, 100, 10);
+        var d = new SimulatedNode("D", 1, 10, 100, 10);
+
+        var connections = new[]
+        {
+            new Connection(a, b, 1, 100),
+            new Connection(a, c, 1, 100),
+            new Connection(b, d, 1, 100),
+            new Connection(c, d, 1, 100)
+        };
+
+        var graph = new SimulationGraph(
+            new[] { a, b, c, d },
+            connections);
+
+        var engine = new SimulationEngine(graph);
+
+        var result = engine.Run(5);
+
+        Assert.Equal(40m, result.TotalMonthlyCost);
     }
 }

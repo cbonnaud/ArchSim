@@ -12,19 +12,76 @@ public class SimulationEngine
 
     public SimulationResult Run(double load)
     {
+        var memo = new Dictionary<ISimulatedNode, TraversalResult>();
+
         var entry = GetEntryPoint();
 
-        var result = SimulateNode(entry, load);
+        var result = SimulateNode(entry, load, memo);
 
-        var costPerRequest = CalculateCostPerRequest(result.TotalCost, load);
+        var totalCost = _graph.Nodes.Sum(n => n.MonthlyCost);
+        var costPerRequest = CalculateCostPerRequest(totalCost, load);
 
         return new SimulationResult(
             result.TotalLatency,
             result.HasErrors,
-            result.TotalCost,
+            totalCost,
             costPerRequest
         );
     }
+
+    private TraversalResult SimulateNode(
+        ISimulatedNode node,
+        double load,
+        Dictionary<ISimulatedNode, TraversalResult> memo)
+    {
+        if (memo.TryGetValue(node, out var cached))
+        {
+            return cached;
+        }
+
+        var nodeResult = node.Process(load);
+
+        var outgoingConnections = _graph.GetOutgoingConnections(node);
+
+        if (!outgoingConnections.Any())
+        {
+            var leafResult = new TraversalResult(
+                nodeResult.Latency,
+                nodeResult.HasTimedOut);
+
+            memo[node] = leafResult;
+            return leafResult;
+        }
+
+        double maxBranchLatency = 0;
+        bool hasTimedOut = nodeResult.HasTimedOut;
+        decimal totalCost = node.MonthlyCost;
+
+        foreach (var connection in outgoingConnections)
+        {
+            var downstream = SimulateNode(connection.To, load, memo);
+
+            double segmentLatency = connection.NetworkLatency + downstream.TotalLatency;
+
+            bool connectionTimeout = segmentLatency >= connection.Timeout;
+
+            hasTimedOut |= connectionTimeout || downstream.HasErrors;
+
+            maxBranchLatency = Math.Max(maxBranchLatency, segmentLatency);
+        }
+
+        var result = new TraversalResult(
+            nodeResult.Latency + maxBranchLatency,
+            hasTimedOut);
+
+        memo[node] = result;
+        return result;
+    }
+
+    private sealed record TraversalResult(
+        double TotalLatency,
+        bool HasErrors
+    );
 
     private decimal CalculateCostPerRequest(decimal totalCost, double load)
     {
@@ -34,78 +91,7 @@ public class SimulationEngine
         return totalCost / ((decimal)load * SecondPerMonth);
     }
 
-    private TraversalResult SimulateNode(
-        SimulatedNode node,
-        double load)
-    {
-        // 1️⃣ Process current node
-        var processing = node.Process(load);
-
-        var nodeLatency = processing.Latency;
-        var nodeCost = node.MonthlyCost;
-        var hasErrors = processing.HasTimedOut;
-
-        // 2️⃣ Get outgoing connections
-        var outgoing = _graph.Connections
-            .Where(c => c.From == node)
-            .ToList();
-
-        // 3️⃣ Leaf node → no downstream
-        if (!outgoing.Any())
-        {
-            return new TraversalResult(
-                nodeLatency,
-                hasErrors,
-                nodeCost
-            );
-        }
-
-        // 4️⃣ Evaluate downstream branches
-        var branchLatencies = new List<double>();
-        var totalCost = nodeCost;
-
-        foreach (var connection in outgoing)
-        {
-            var downstream = SimulateNode(connection.To, load);
-
-            var segmentLatency =
-                connection.NetworkLatency
-                + downstream.TotalLatency;
-
-            // Timeout evaluation (local to connection)
-            if (segmentLatency >= connection.Timeout)
-            {
-                hasErrors = true;
-            }
-
-            branchLatencies.Add(segmentLatency);
-
-            totalCost += downstream.TotalCost;
-
-            if (downstream.HasErrors)
-            {
-                hasErrors = true;
-            }
-        }
-
-        var downstreamLatency = branchLatencies.Max();
-
-        var totalLatency = nodeLatency + downstreamLatency;
-
-        return new TraversalResult(
-            totalLatency,
-            hasErrors,
-            totalCost
-        );
-    }
-
-    private sealed record TraversalResult(
-        double TotalLatency,
-        bool HasErrors,
-        decimal TotalCost
-    );
-
-    private SimulatedNode GetEntryPoint()
+    private ISimulatedNode GetEntryPoint()
     {
         return _graph.Nodes.FirstOrDefault(node => !_graph.Connections.Any(conn => conn.To == node))
             ?? throw new InvalidOperationException("No entry point found in the simulation graph.");

@@ -1,11 +1,13 @@
 namespace ArchSim.Domain.Simulation;
 
 public class SimulatedNode(
+    string label,
     double baseLatency,
     double capacity,
     double timeout,
-    decimal monthlyCost)
+    decimal monthlyCost) : ISimulatedNode
 {
+    public string Label { get; } = label;
     public double BaseLatency { get; } = baseLatency;
     public double Capacity { get; } = capacity;
     public double Timeout { get; } = timeout;

@@ -10,6 +10,7 @@ public class SimulatedNodeTests
     public void Should_not_be_saturated_when_load_is_below_capacity()
     {
         var node = new SimulatedNode(
+            "TestNode",
             baseLatency: 40,
             capacity: 100,
             timeout: 200,
@@ -26,6 +27,7 @@ public class SimulatedNodeTests
     public void Should_be_saturated_when_load_exceeds_capacity()
     {
         var node = new SimulatedNode(
+            "TestNode",
             baseLatency: 40,
             capacity: 50,
             timeout: 200,
@@ -42,6 +44,7 @@ public class SimulatedNodeTests
     public void Should_not_timeout_when_latency_is_below_timeout()
     {
         var node = new SimulatedNode(
+            "TestNode",
             baseLatency: 40,
             capacity: 100,
             timeout: 200,
@@ -57,6 +60,7 @@ public class SimulatedNodeTests
     public void Should_timeout_when_latency_exceeds_timeout()
     {
         var node = new SimulatedNode(
+            "TestNode",
             baseLatency: 40,
             capacity: 50,
             timeout: 200,
@@ -74,6 +78,7 @@ public class SimulatedNodeTests
     public void Should_expose_monthly_cost()
     {
         var node = new SimulatedNode(
+            "TestNode",
             baseLatency: 40,
             capacity: 100,
             timeout: 200,
