@@ -3,6 +3,7 @@ namespace ArchSim.Domain.Simulation;
 public class SimulationEngine
 {
     private readonly SimulationGraph _graph;
+    private const int SecondPerMonth = 30 * 24 * 60 * 60;
 
     public SimulationEngine(SimulationGraph graph)
     {
@@ -11,50 +12,102 @@ public class SimulationEngine
 
     public SimulationResult Run(double load)
     {
-        var currentNode = GetEntryPoint();
-        var totalLatency = 0.0;
+        var entry = GetEntryPoint();
 
-        while (currentNode is not null)
+        var result = SimulateNode(entry, load);
+
+        var costPerRequest = CalculateCostPerRequest(result.TotalCost, load);
+
+        return new SimulationResult(
+            result.TotalLatency,
+            result.HasErrors,
+            result.TotalCost,
+            costPerRequest
+        );
+    }
+
+    private decimal CalculateCostPerRequest(decimal totalCost, double load)
+    {
+        if (load <= 0)
+            throw new ArgumentException("Load must be greater than zero to calculate cost per request.");
+
+        return totalCost / ((decimal)load * SecondPerMonth);
+    }
+
+    private TraversalResult SimulateNode(
+        SimulatedNode node,
+        double load)
+    {
+        // 1️⃣ Process current node
+        var processing = node.Process(load);
+
+        var nodeLatency = processing.Latency;
+        var nodeCost = node.MonthlyCost;
+        var hasErrors = processing.HasTimedOut;
+
+        // 2️⃣ Get outgoing connections
+        var outgoing = _graph.Connections
+            .Where(c => c.From == node)
+            .ToList();
+
+        // 3️⃣ Leaf node → no downstream
+        if (!outgoing.Any())
         {
-            var processingResult = currentNode.Process(load);
-
-            // Add crossed node latency 
-            totalLatency += processingResult.Latency;
-
-            // Add network latency
-            var outgoingConnection = _graph.Connections.First(conn => conn.From == currentNode);
-            totalLatency += outgoingConnection.NetworkLatency;
-
-            // if (totalLatency) TODO :  finish GetDownStreamLatency logic
-
+            return new TraversalResult(
+                nodeLatency,
+                hasErrors,
+                nodeCost
+            );
         }
 
+        // 4️⃣ Evaluate downstream branches
+        var branchLatencies = new List<double>();
+        var totalCost = nodeCost;
 
+        foreach (var connection in outgoing)
+        {
+            var downstream = SimulateNode(connection.To, load);
 
+            var segmentLatency =
+                connection.NetworkLatency
+                + downstream.TotalLatency;
+
+            // Timeout evaluation (local to connection)
+            if (segmentLatency >= connection.Timeout)
+            {
+                hasErrors = true;
+            }
+
+            branchLatencies.Add(segmentLatency);
+
+            totalCost += downstream.TotalCost;
+
+            if (downstream.HasErrors)
+            {
+                hasErrors = true;
+            }
+        }
+
+        var downstreamLatency = branchLatencies.Max();
+
+        var totalLatency = nodeLatency + downstreamLatency;
+
+        return new TraversalResult(
+            totalLatency,
+            hasErrors,
+            totalCost
+        );
     }
 
-    private double GetDownStreamLatency(Connection connection)
-    {
-        return connection.NetworkLatency;
-    }
+    private sealed record TraversalResult(
+        double TotalLatency,
+        bool HasErrors,
+        decimal TotalCost
+    );
 
     private SimulatedNode GetEntryPoint()
     {
         return _graph.Nodes.FirstOrDefault(node => !_graph.Connections.Any(conn => conn.To == node))
             ?? throw new InvalidOperationException("No entry point found in the simulation graph.");
     }
-
-    // public SimulationResult Run(double load)
-    // {
-    //     return _nodes.Aggregate(new SimulationResult(0, false, 0, 0), (result, node) =>
-    //     {
-    //         var currentResult = node.Process(load);
-    //         return new SimulationResult(
-    //             result.TotalLatency + currentResult.Latency,
-    //             result.HasErrors || currentResult.HasTimedOut,
-    //             result.TotalMonthlyCost + node.MonthlyCost,
-    //             result.CostPerRequest + node.MonthlyCost / ((decimal)load * SecondsPerMonth)
-    //         );
-    //     });
-    // }
 }

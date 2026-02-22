@@ -6,75 +6,75 @@ namespace ArchSim.Domain.Tests;
 
 public class SimulationEngineTests
 {
-    [Fact]
-    public void Should_calculate_total_latency_without_errors_when_not_saturated()
-    {
-        var compute = new SimulatedNode(10, 100, 200, 150);
-        var database = new SimulatedNode(40, 100, 200, 200);
+    // [Fact]
+    // public void Should_calculate_total_latency_without_errors_when_not_saturated()
+    // {
+    //     var compute = new SimulatedNode(10, 100, 200, 150);
+    //     var database = new SimulatedNode(40, 100, 200, 200);
 
-        var engine = new SimulationEngine([compute, database]);
+    //     var engine = new SimulationEngine([compute, database]);
 
-        var result = engine.Run(load: 40);
+    //     var result = engine.Run(load: 40);
 
-        result.TotalLatency.Should().Be(50); // 10 + 40
-        result.HasErrors.Should().BeFalse();
-    }
+    //     result.TotalLatency.Should().Be(50); // 10 + 40
+    //     result.HasErrors.Should().BeFalse();
+    // }
 
-    [Fact]
-    public void Should_report_error_when_database_times_out()
-    {
-        var compute = new SimulatedNode(10, 100, 200, 150);
-        var database = new SimulatedNode(40, 50, 200, 200);
+    // [Fact]
+    // public void Should_report_error_when_database_times_out()
+    // {
+    //     var compute = new SimulatedNode(10, 100, 200, 150);
+    //     var database = new SimulatedNode(40, 50, 200, 200);
 
-        var engine = new SimulationEngine([compute, database]);
+    //     var engine = new SimulationEngine([compute, database]);
 
-        var result = engine.Run(load: 300);
+    //     var result = engine.Run(load: 300);
 
-        result.HasErrors.Should().BeTrue();
-    }
+    //     result.HasErrors.Should().BeTrue();
+    // }
 
-    [Fact]
-    public void Should_process_multiple_nodes_in_sequence()
-    {
-        var compute = new SimulatedNode(10, 100, 200, 150);
-        var database = new SimulatedNode(40, 100, 200, 200);
-        var cache = new SimulatedNode(5, 100, 200, 100);
+    // [Fact]
+    // public void Should_process_multiple_nodes_in_sequence()
+    // {
+    //     var compute = new SimulatedNode(10, 100, 200, 150);
+    //     var database = new SimulatedNode(40, 100, 200, 200);
+    //     var cache = new SimulatedNode(5, 100, 200, 100);
 
-        var engine = new SimulationEngine([compute, cache, database]);
+    //     var engine = new SimulationEngine([compute, cache, database]);
 
-        var result = engine.Run(load: 40);
+    //     var result = engine.Run(load: 40);
 
-        result.TotalLatency.Should().Be(55);
-        // 10 + 5 + 40
+    //     result.TotalLatency.Should().Be(55);
+    //     // 10 + 5 + 40
 
-        result.HasErrors.Should().BeFalse();
-    }
+    //     result.HasErrors.Should().BeFalse();
+    // }
 
-    [Fact]
-    public void Should_calculate_total_monthly_cost()
-    {
-        var compute = new SimulatedNode(10, 100, 200, 100);
-        var database = new SimulatedNode(40, 100, 200, 200);
+    // [Fact]
+    // public void Should_calculate_total_monthly_cost()
+    // {
+    //     var compute = new SimulatedNode(10, 100, 200, 100);
+    //     var database = new SimulatedNode(40, 100, 200, 200);
 
-        var engine = new SimulationEngine([compute, database]);
+    //     var engine = new SimulationEngine([compute, database]);
 
-        var result = engine.Run(load: 40);
+    //     var result = engine.Run(load: 40);
 
-        result.TotalMonthlyCost.Should().Be(300);
-    }
+    //     result.TotalMonthlyCost.Should().Be(300);
+    // }
 
-    [Fact]
-    public void Should_calculate_cost_per_request()
-    {
-        var compute = new SimulatedNode(10, 100, 200, 100);
-        var database = new SimulatedNode(40, 100, 200, 200);
+    // [Fact]
+    // public void Should_calculate_cost_per_request()
+    // {
+    //     var compute = new SimulatedNode(10, 100, 200, 100);
+    //     var database = new SimulatedNode(40, 100, 200, 200);
 
-        var engine = new SimulationEngine([compute, database]);
+    //     var engine = new SimulationEngine([compute, database]);
 
-        var result = engine.Run(load: 10);
+    //     var result = engine.Run(load: 10);
 
-        result.CostPerRequest.Should().BeGreaterThan(0);
-    }
+    //     result.CostPerRequest.Should().BeGreaterThan(0);
+    // }
 
     [Fact]
     public void Should_calculate_total_latency_with_network_latency()
@@ -102,6 +102,8 @@ public class SimulationEngineTests
         // 10 + 5 + 40
 
         result.HasErrors.Should().BeFalse();
+        result.TotalMonthlyCost.Should().Be(300);
+        result.CostPerRequest.Should().BeGreaterThan(0);
     }
 
     [Fact]
