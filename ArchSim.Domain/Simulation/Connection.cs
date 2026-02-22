@@ -2,14 +2,14 @@ namespace ArchSim.Domain.Simulation;
 
 public class Connection
 {
-    public SimulatedNode From { get; }
-    public SimulatedNode To { get; }
+    public ISimulatedNode From { get; }
+    public ISimulatedNode To { get; }
     public double NetworkLatency { get; }
     public double Timeout { get; }
 
     public Connection(
-        SimulatedNode from,
-        SimulatedNode to,
+        ISimulatedNode from,
+        ISimulatedNode to,
         double networkLatency,
         double timeout)
     {

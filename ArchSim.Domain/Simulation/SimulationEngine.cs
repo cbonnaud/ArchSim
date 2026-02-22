@@ -1,13 +1,17 @@
+using ArchSim.Domain.Simulation.Cost;
+
 namespace ArchSim.Domain.Simulation;
 
 public class SimulationEngine
 {
     private readonly SimulationGraph _graph;
     private const int SecondPerMonth = 30 * 24 * 60 * 60;
+    private readonly ICostModel _costModel;
 
-    public SimulationEngine(SimulationGraph graph)
+    public SimulationEngine(SimulationGraph graph, ICostModel costModel)
     {
         _graph = graph;
+        _costModel = costModel;
     }
 
     public SimulationResult Run(double load)
@@ -18,8 +22,13 @@ public class SimulationEngine
 
         var result = SimulateNode(entry, load, memo);
 
-        var totalCost = _graph.Nodes.Sum(n => n.MonthlyCost);
-        var costPerRequest = CalculateCostPerRequest(totalCost, load);
+        var totalCost = _costModel.CalculateTotalMonthlyCost(
+            _graph.Nodes,
+            load);
+
+        var costPerRequest = _costModel.CalculateCostPerRequest(
+            totalCost,
+            load);
 
         return new SimulationResult(
             result.TotalLatency,
@@ -55,7 +64,6 @@ public class SimulationEngine
 
         double maxBranchLatency = 0;
         bool hasTimedOut = nodeResult.HasTimedOut;
-        decimal totalCost = node.MonthlyCost;
 
         foreach (var connection in outgoingConnections)
         {

@@ -10,6 +10,11 @@ public class TestNode(string label, double baseLatency, double capacity, decimal
     public double Capacity { get; } = capacity;
     public decimal MonthlyCost { get; } = cost;
 
+    public decimal CalculateMonthlyCost(double load)
+    {
+        throw new NotImplementedException();
+    }
+
     public NodeProcessingResult Process(double load)
     {
         ProcessCallCount++;

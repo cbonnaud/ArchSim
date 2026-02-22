@@ -1,4 +1,5 @@
 using ArchSim.Domain.Simulation;
+using ArchSim.Domain.Simulation.Cost;
 using FluentAssertions;
 
 namespace ArchSim.Domain.Tests;
@@ -8,8 +9,8 @@ public class SimulationGraphTests
     [Fact]
     public void Should_create_graph_with_nodes_and_connections()
     {
-        var compute = new SimulatedNode("Compute", 10, 100, 100, 100);
-        var database = new SimulatedNode("Database", 40, 100, 200, 100);
+        var compute = new SimulatedNode("Compute", 10, 100, 100, 100, new FixedCostPolicy(100));
+        var database = new SimulatedNode("Database", 40, 100, 200, 100, new FixedCostPolicy(100));
 
         var connection = new Connection(
             compute,
@@ -30,9 +31,9 @@ public class SimulationGraphTests
     [Fact]
     public void Constructor_Should_NotThrow_WhenGraphIsAcyclic()
     {
-        var a = new SimulatedNode("A", 1, 1, 1, 10);
-        var b = new SimulatedNode("B", 1, 1, 1, 10);
-        var c = new SimulatedNode("C", 1, 1, 1, 10);
+        var a = new SimulatedNode("A", 1, 1, 1, 10, new FixedCostPolicy(10));
+        var b = new SimulatedNode("B", 1, 1, 1, 10, new FixedCostPolicy(10));
+        var c = new SimulatedNode("C", 1, 1, 1, 10, new FixedCostPolicy(10));
 
         var connections = new[]
         {
@@ -50,9 +51,9 @@ public class SimulationGraphTests
     [Fact]
     public void Constructor_Should_Throw_WhenIndirectCycleExists()
     {
-        var a = new SimulatedNode("A", 1, 1, 1, 10);
-        var b = new SimulatedNode("B", 1, 1, 1, 10);
-        var c = new SimulatedNode("C", 1, 1, 1, 10);
+        var a = new SimulatedNode("A", 1, 1, 1, 10, new FixedCostPolicy(10));
+        var b = new SimulatedNode("B", 1, 1, 1, 10, new FixedCostPolicy(10));
+        var c = new SimulatedNode("C", 1, 1, 1, 10, new FixedCostPolicy(10));
 
         var connections = new[]
         {
@@ -70,10 +71,10 @@ public class SimulationGraphTests
     [Fact]
     public void Constructor_Should_NotThrow_WhenMultipleIndependentSubgraphsExist()
     {
-        var a = new SimulatedNode("A", 1, 1, 1, 10);
-        var b = new SimulatedNode("B", 1, 1, 1, 10);
-        var c = new SimulatedNode("C", 1, 1, 1, 10);
-        var d = new SimulatedNode("D", 1, 1, 1, 10);
+        var a = new SimulatedNode("A", 1, 1, 1, 10, new FixedCostPolicy(10));
+        var b = new SimulatedNode("B", 1, 1, 1, 10, new FixedCostPolicy(10));
+        var c = new SimulatedNode("C", 1, 1, 1, 10, new FixedCostPolicy(10));
+        var d = new SimulatedNode("D", 1, 1, 1, 10, new FixedCostPolicy(10));
 
         var connections = new[]
         {
@@ -91,7 +92,7 @@ public class SimulationGraphTests
     [Fact]
     public void Constructor_Should_Throw_WhenSelfReferenceExists()
     {
-        var a = new SimulatedNode("A", 1, 1, 1, 10);
+        var a = new SimulatedNode("A", 1, 1, 1, 10, new FixedCostPolicy(10));
 
         var connections = new[]
         {

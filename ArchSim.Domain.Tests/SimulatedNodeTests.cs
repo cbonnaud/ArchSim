@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Xunit;
 using ArchSim.Domain.Simulation;
+using ArchSim.Domain.Simulation.Cost;
 
 namespace ArchSim.Domain.Tests;
 
@@ -14,7 +15,8 @@ public class SimulatedNodeTests
             baseLatency: 40,
             capacity: 100,
             timeout: 200,
-            monthlyCost: 150
+            monthlyCost: 150,
+            costPolicy: new FixedCostPolicy(150)
         );
 
         var result = node.Process(load: 40);
@@ -31,7 +33,8 @@ public class SimulatedNodeTests
             baseLatency: 40,
             capacity: 50,
             timeout: 200,
-            monthlyCost: 150
+            monthlyCost: 150,
+            costPolicy: new FixedCostPolicy(150)
         );
 
         var result = node.Process(load: 80);
@@ -48,7 +51,8 @@ public class SimulatedNodeTests
             baseLatency: 40,
             capacity: 100,
             timeout: 200,
-            monthlyCost: 150
+            monthlyCost: 150,
+            costPolicy: new FixedCostPolicy(150)
         );
 
         var result = node.Process(load: 40);
@@ -64,7 +68,8 @@ public class SimulatedNodeTests
             baseLatency: 40,
             capacity: 50,
             timeout: 200,
-            monthlyCost: 150
+            monthlyCost: 150,
+            costPolicy: new FixedCostPolicy(150)
         );
 
         var result = node.Process(load: 300);
@@ -82,7 +87,8 @@ public class SimulatedNodeTests
             baseLatency: 40,
             capacity: 100,
             timeout: 200,
-            monthlyCost: 150
+            monthlyCost: 150,
+            costPolicy: new FixedCostPolicy(150)
         );
 
         node.MonthlyCost.Should().Be(150);

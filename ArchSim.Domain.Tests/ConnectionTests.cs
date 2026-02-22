@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Xunit;
 using ArchSim.Domain.Simulation;
+using ArchSim.Domain.Simulation.Cost;
 
 namespace ArchSim.Domain.Tests;
 
@@ -9,8 +10,8 @@ public class ConnectionTests
     [Fact]
     public void Should_link_two_nodes()
     {
-        var from = new SimulatedNode("FromNode", 10, 100, 100, 100);
-        var to = new SimulatedNode("ToNode", 40, 100, 200, 200);
+        var from = new SimulatedNode("FromNode", 10, 100, 100, 100, new FixedCostPolicy(100));
+        var to = new SimulatedNode("ToNode", 40, 100, 200, 200, new FixedCostPolicy(200));
 
         var connection = new Connection(
             from,
@@ -26,8 +27,8 @@ public class ConnectionTests
     [Fact]
     public void Should_expose_network_latency()
     {
-        var from = new SimulatedNode("FromNode", 10, 100, 100, 100);
-        var to = new SimulatedNode("ToNode", 40, 100, 200, 200);
+        var from = new SimulatedNode("FromNode", 10, 100, 100, 100, new FixedCostPolicy(100));
+        var to = new SimulatedNode("ToNode", 40, 100, 200, 200, new FixedCostPolicy(200));
 
         var connection = new Connection(from, to, 5, 50);
 

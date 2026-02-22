@@ -1,86 +1,19 @@
 using FluentAssertions;
 using Xunit;
 using ArchSim.Domain.Simulation;
+using ArchSim.Domain.Tests.Cost;
 
 namespace ArchSim.Domain.Tests;
 
 public class SimulationEngineTests
 {
-    // [Fact]
-    // public void Should_calculate_total_latency_without_errors_when_not_saturated()
-    // {
-    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 150);
-    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
-
-    //     var engine = new SimulationEngine([compute, database]);
-
-    //     var result = engine.Run(load: 40);
-
-    //     result.TotalLatency.Should().Be(50); // 10 + 40
-    //     result.HasErrors.Should().BeFalse();
-    // }
-
-    // [Fact]
-    // public void Should_report_error_when_database_times_out()
-    // {
-    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 150);
-    //     var database = new SimulatedNode("Database", 40, 50, 200, 200);
-
-    //     var engine = new SimulationEngine([compute, database]);
-
-    //     var result = engine.Run(load: 300);
-
-    //     result.HasErrors.Should().BeTrue();
-    // }
-
-    // [Fact]
-    // public void Should_process_multiple_nodes_in_sequence()
-    // {
-    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 150);
-    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
-    //     var cache = new SimulatedNode("Cache", 5, 100, 200, 100);
-
-    //     var engine = new SimulationEngine([compute, cache, database]);
-
-    //     var result = engine.Run(load: 40);
-
-    //     result.TotalLatency.Should().Be(55);
-    //     // 10 + 5 + 40
-
-    //     result.HasErrors.Should().BeFalse();
-    // }
-
-    // [Fact]
-    // public void Should_calculate_total_monthly_cost()
-    // {
-    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 100);
-    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
-
-    //     var engine = new SimulationEngine([compute, database]);
-
-    //     var result = engine.Run(load: 40);
-
-    //     result.TotalMonthlyCost.Should().Be(300);
-    // }
-
-    // [Fact]
-    // public void Should_calculate_cost_per_request()
-    // {
-    //     var compute = new SimulatedNode("Compute", 10, 100, 200, 100);
-    //     var database = new SimulatedNode("Database", 40, 100, 200, 200);
-
-    //     var engine = new SimulationEngine([compute, database]);
-
-    //     var result = engine.Run(load: 10);
-
-    //     result.CostPerRequest.Should().BeGreaterThan(0);
-    // }
-
     [Fact]
     public void Should_calculate_total_latency_with_network_latency()
     {
-        var compute = new SimulatedNode("Compute", 10, 100, 100, 150);
-        var database = new SimulatedNode("Database", 40, 100, 200, 150);
+        var fakePolicy = new FakePolicy();
+
+        var compute = new SimulatedNode("Compute", 10, 100, 100, 150, fakePolicy);
+        var database = new SimulatedNode("Database", 40, 100, 200, 150, fakePolicy);
 
         var connection = new Connection(
             compute,
@@ -94,7 +27,7 @@ public class SimulationEngineTests
             new[] { connection }
         );
 
-        var engine = new SimulationEngine(graph);
+        var engine = new SimulationEngine(graph, new FakeCostModel());
 
         var result = engine.Run(load: 40);
 
@@ -102,15 +35,17 @@ public class SimulationEngineTests
         // 10 + 5 + 40
 
         result.HasErrors.Should().BeFalse();
-        result.TotalMonthlyCost.Should().Be(300);
+        result.TotalMonthlyCost.Should().Be(84);
         result.CostPerRequest.Should().BeGreaterThan(0);
     }
 
     [Fact]
     public void Should_report_error_when_connection_timeout_is_exceeded()
     {
-        var compute = new SimulatedNode("Compute", 10, 100, 100, 150);
-        var database = new SimulatedNode("Database", 40, 50, 200, 150);
+        var fakePolicy = new FakePolicy();
+
+        var compute = new SimulatedNode("Compute", 10, 100, 100, 150, fakePolicy);
+        var database = new SimulatedNode("Database", 40, 50, 200, 150, fakePolicy);
 
         var connection = new Connection(
             compute,
@@ -124,7 +59,7 @@ public class SimulationEngineTests
             new[] { connection }
         );
 
-        var engine = new SimulationEngine(graph);
+        var engine = new SimulationEngine(graph, new FakeCostModel());
 
         var result = engine.Run(load: 300);
 
@@ -134,10 +69,12 @@ public class SimulationEngineTests
     [Fact]
     public void Run_Should_Not_Duplicate_MonthlyCost_When_Node_Converges()
     {
-        var a = new SimulatedNode("A", 1, 10, 100, 10);
-        var b = new SimulatedNode("B", 1, 10, 100, 10);
-        var c = new SimulatedNode("C", 1, 10, 100, 10);
-        var d = new SimulatedNode("D", 1, 10, 100, 10);
+        var fakePolicy = new FakePolicy();
+
+        var a = new SimulatedNode("A", 1, 10, 100, 10, fakePolicy);
+        var b = new SimulatedNode("B", 1, 10, 100, 10, fakePolicy);
+        var c = new SimulatedNode("C", 1, 10, 100, 10, fakePolicy);
+        var d = new SimulatedNode("D", 1, 10, 100, 10, fakePolicy);
 
         var connections = new[]
         {
@@ -151,28 +88,30 @@ public class SimulationEngineTests
             new[] { a, b, c, d },
             connections);
 
-        var engine = new SimulationEngine(graph);
+        var engine = new SimulationEngine(graph, new FakeCostModel());
 
         var result = engine.Run(5);
 
-        Assert.Equal(40m, result.TotalMonthlyCost);
+        Assert.Equal(4 * 42, result.TotalMonthlyCost);
     }
 
     [Fact]
     public void Run_Should_Sum_All_Node_Costs_Linearly()
     {
-        var a = new SimulatedNode("A", 1, 10, 100, 10);
-        var b = new SimulatedNode("B", 1, 10, 100, 20);
-        var c = new SimulatedNode("C", 1, 10, 100, 30);
+        var fakePolicy = new FakePolicy();
+
+        var a = new SimulatedNode("A", 1, 10, 100, 10, fakePolicy);
+        var b = new SimulatedNode("B", 1, 10, 100, 20, fakePolicy);
+        var c = new SimulatedNode("C", 1, 10, 100, 30, fakePolicy);
 
         var graph = new SimulationGraph(
             new[] { a, b, c },
             Array.Empty<Connection>());
 
-        var engine = new SimulationEngine(graph);
+        var engine = new SimulationEngine(graph, new FakeCostModel());
 
         var result = engine.Run(5);
 
-        Assert.Equal(60m, result.TotalMonthlyCost);
+        Assert.Equal(3 * 42, result.TotalMonthlyCost);
     }
 }
