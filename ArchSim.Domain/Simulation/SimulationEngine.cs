@@ -91,14 +91,6 @@ public class SimulationEngine
         bool HasErrors
     );
 
-    private decimal CalculateCostPerRequest(decimal totalCost, double load)
-    {
-        if (load <= 0)
-            throw new ArgumentException("Load must be greater than zero to calculate cost per request.");
-
-        return totalCost / ((decimal)load * SecondPerMonth);
-    }
-
     private ISimulatedNode GetEntryPoint()
     {
         return _graph.Nodes.FirstOrDefault(node => !_graph.Connections.Any(conn => conn.To == node))
